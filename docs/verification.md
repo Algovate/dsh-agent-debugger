@@ -6,6 +6,8 @@
 ## 当前结论
 
 - **自动测试**：插件 64 pass，工作区 150 pass。
+- **npm 发布**：`dsh-agent-debugger@0.2.0` 已发布，`latest` 指向它；临时 profile 安装成功，
+  `--dump-config-schema` 退出 0 并包含 `agent-debugger` 条目。
 - **真实 GUI 已验证**：步骤断点能在真实回合里暂停，显示暂停面板、自动放行倒计时和
   Continue / Add guidance / Stop turn；暂停确实阻塞 Agent。
 - **尚未在真实 GUI 验证**：工具断点的放行/改参数/跳过/停止、步骤注入后续跑、

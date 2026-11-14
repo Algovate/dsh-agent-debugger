@@ -1,6 +1,7 @@
 # 智能体调试器 · Agent Debugger
 
 [![CI](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml/badge.svg)](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/dsh-agent-debugger.svg)](https://www.npmjs.com/package/dsh-agent-debugger)
 
 ![Agent Debugger 演示：工具断点、diff 预览、交付前断点](docs/demo.gif)
 

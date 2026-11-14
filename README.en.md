@@ -1,6 +1,7 @@
 # Agent Debugger
 
 [![CI](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml/badge.svg)](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/dsh-agent-debugger.svg)](https://www.npmjs.com/package/dsh-agent-debugger)
 
 ![Agent Debugger demo: tool pause, diff preview, finish pause](docs/demo.gif)
 

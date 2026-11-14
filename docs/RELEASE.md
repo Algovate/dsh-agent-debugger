@@ -1,22 +1,25 @@
 # Release checklist
 
-Agent Debugger is prepared for a public GitHub repository, an npm release, and a DSH plugin-market
-listing. The remaining external steps need npm credentials and a marketplace entry.
+Agent Debugger is published on GitHub and npm. The remaining external step is a DSH plugin-market
+listing; the live GUI checks are tracked separately as a known limitation.
 
 ## Current status (2026-11-14)
 
 - Version: `0.2.0`; package name `dsh-agent-debugger`.
-- npm name is available: `npm view dsh-agent-debugger version` → 404.
+- npm: **published** `dsh-agent-debugger@0.2.0`; `latest` points to it.
+  <https://www.npmjs.com/package/dsh-agent-debugger>
 - Public repository: <https://github.com/Algovate/dsh-agent-debugger> (main, CI green).
 - Release tag: `v0.2.0`.
+- Fresh temp profile installed `dsh-agent-debugger@0.2.0`; `--dump-config-schema` exited 0 and
+  contained the `agent-debugger` entry.
 - Demo GIF: `docs/demo.gif` (960×540, 24 s, 12.5 fps, 300 frames, 2.3 MB), reproducible from
   `docs/demo.html`; included in the README and npm package.
 - `repository`, `homepage`, and `bugs` are set in `package.json`.
 - Automated checks: plugin **64 pass**, workspace **150 pass**, `npm run check` passes.
 - `npm pack --dry-run` passes: 21 files, 2.3 MB (includes `docs/demo.gif`). The packed file list is
   the authority; no build step and no install scripts means no pnpm build allowance is needed.
-- npm authentication is **not configured** in the current environment; `npm publish` has not
-  been run.
+- npm authentication was configured for the release account; `npm publish` completed as
+  `dsh-agent-debugger@0.2.0`.
 - Live GUI still needs the finish-pause, `agent.steer` continuation, and diff-rendering walkthrough
   listed in [verification.md](verification.md#0.2.0-状态).
 
@@ -25,8 +28,9 @@ listing. The remaining external steps need npm credentials and a marketplace ent
 - [x] Create the public repository under `Algovate`.
 - [x] Add `repository`, `homepage`, and `bugs` to `package.json`; `author` is `Algovate`.
 - [x] Push `main`; GitHub Actions CI is green.
-- [x] Confirm the npm name is still available: `npm view dsh-agent-debugger version` → 404.
+- [x] Confirm the npm name is still available before publishing: `npm view dsh-agent-debugger version` → 404.
 - [x] Tag the release: `v0.2.0`.
+- [x] Publish `dsh-agent-debugger@0.2.0` to npm; `latest` points to it.
 
 ## 2. Pre-flight
 
@@ -47,23 +51,26 @@ The packed file list must include:
 - `docs/DETAIL.md`, `docs/DETAIL.zh.md`, `docs/verification.md`,
   `docs/verification-history.md`, `docs/RELEASE.md`
 
-## 3. Publish
+## 3. Publish (done for 0.2.0)
 
 ```sh
 npm login
-npm publish --access public
+npm publish --access public --otp=<code>
 ```
 
-`prepublishOnly` reruns the tests and syntax checks. Do not publish until the live GUI checks in
-[verification.md](verification.md#0.2.0-状态) are either completed or explicitly accepted as a
-known limitation.
+`prepublishOnly` reruns the tests and syntax checks. The live GUI checks in
+[verification.md](verification.md#0.2.0-状态) are still listed as unverified; they are a known
+limitation of this release, not a publish blocker.
 
-## 4. Install from the registry in a fresh profile
+## 4. Install from the registry in a fresh profile (verified)
 
 ```sh
 dsh plugin --profile <test-profile> add dsh-agent-debugger@0.2.0
 dsh --profile <test-profile> --dump-config | grep -A2 'agent-debugger'
 ```
+
+Verified with a temp `DSH_HOME`: install succeeded, `--dump-config-schema` exited 0 and contained
+`agent-debugger`.
 
 Then boot the Web profile, open a session, and confirm:
 
