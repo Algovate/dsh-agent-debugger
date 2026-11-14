@@ -22,6 +22,9 @@ listing; the live GUI checks are tracked separately as a known limitation.
   `dsh-agent-debugger@0.2.0`.
 - Live GUI still needs the finish-pause, `agent.steer` continuation, and diff-rendering walkthrough
   listed in [verification.md](verification.md#0.2.0-状态).
+- Open Plugin Market: submitted via
+  [issue #487](https://github.com/polang233/dsh-plugin-index/issues/487); the index is curated by
+  maintainers, so this is pending review rather than an immediate listing.
 
 ## 1. Identity
 
@@ -81,6 +84,9 @@ Then boot the Web profile, open a session, and confirm:
 - an unauthenticated `/agent-debugger/api/state` request is rejected.
 
 ## 5. Marketplace listing
+
+Submitted 2026-11-14: [Open Plugin Market issue #487](https://github.com/polang233/dsh-plugin-index/issues/487).
+The market index is curated by maintainers; wait for review and the next index refresh.
 
 The market index entry needs:
 
