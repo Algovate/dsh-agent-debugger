@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agent Debugger demo</title>
+<style>
+  :root {
+    --bg: #080b11;
+    --panel: #111722;
+    --panel-2: #0d131d;
+    --panel-3: #151c29;
+    --border: #263143;
+    --border-soft: #1c2533;
+    --text: #e7edf7;
+    --muted: #94a1b5;
+    --dim: #5e6b80;
+    --blue: #4d8dff;
+    --blue-soft: rgba(77,141,255,.14);
+    --red: #ff6b6b;
+    --red-soft: rgba(255,107,107,.12);
+    --green: #35d6a3;
+    --green-soft: rgba(53,214,163,.12);
+    --amber: #f5b84b;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { width: 960px; height: 540px; margin: 0; overflow: hidden; background: var(--bg); }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 960px; height: 540px; overflow: hidden; background:
+    radial-gradient(1100px 520px at 12% -12%, rgba(77,141,255,.17), transparent 62%),
+    radial-gradient(900px 480px at 98% 112%, rgba(255,107,107,.09), transparent 62%),
+    var(--bg); }
+  .topbar { position: absolute; left: 34px; right: 34px; top: 18px; height: 28px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: .01em; }
+  .brand .mark { width: 22px; height: 22px; border-radius: 7px; background: linear-gradient(145deg,#255ea8,#163c73); display: grid; place-items: center; color: #fff; font-size: 13px; box-shadow: 0 4px 14px rgba(37,94,168,.35); }
+  .brand b { font-weight: 650; }
+  .brand .sub { color: var(--dim); font-size: 11px; }
+  .demo-pill { color: #a8b6cb; border: .5px solid #2e3a4e; background: rgba(255,255,255,.03); border-radius: 999px; padding: 4px 9px; font-size: 9.5px; letter-spacing: .13em; }
+  .window { position: absolute; left: 40px; top: 62px; width: 880px; height: 438px; border: .5px solid var(--border); border-radius: 18px; background: linear-gradient(180deg, rgba(20,27,39,.97), rgba(12,17,26,.99)); box-shadow: 0 30px 90px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.02) inset; overflow: hidden; }
+  .window-head { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-bottom: .5px solid var(--border-soft); background: rgba(255,255,255,.015); }
+  .tdot { width: 9px; height: 9px; border-radius: 50%; background: #2b3547; }
+  .tdot.r { background: #3a2a2d; } .tdot.y { background: #3a3628; } .tdot.g { background: #223a33; }
+  .window-title { margin-left: 8px; color: var(--muted); font-size: 11px; }
+  .window-meta { margin-left: auto; color: var(--dim); font-size: 10px; font-family: var(--mono); }
+  .body { display: flex; height: 404px; }
+  .chat-col { position: relative; display: flex; flex-direction: column; width: 550px; min-width: 0; }
+  .chat { flex: 1; min-height: 0; padding: 13px 16px 10px; overflow: hidden; }
+.chat-fade-top { position: absolute; left: 0; right: 0; top: 0; height: 34px; background: linear-gradient(180deg, rgba(13,18,27,1) 0 12px, rgba(13,18,27,0) 34px); z-index: 3; opacity: 0; pointer-events: none; }
+  .msg { display: flex; margin: 0 0 8px; opacity: 0; transform: translateY(5px); }
+  .msg.user { justify-content: flex-end; }
+  .bubble { max-width: 84%; padding: 8px 11px; border-radius: 12px; font-size: 11.5px; line-height: 1.45; }
+  .msg.user .bubble { background: #1c3a66; color: #eaf2ff; border-bottom-right-radius: 4px; }
+  .msg.assistant .bubble { background: #171e2b; border: .5px solid #273246; color: #dbe3ef; border-bottom-left-radius: 4px; }
+  .msg .who { font-size: 8.5px; letter-spacing: .09em; color: var(--dim); margin: 0 0 3px 2px; text-transform: uppercase; }
+  .msg.user .who { text-align: right; margin-right: 2px; }
+  .bubble code { font-family: var(--mono); font-size: 10.5px; background: rgba(255,255,255,.06); padding: 1px 4px; border-radius: 4px; }
+  .card { border: .5px solid var(--border); border-radius: 10px; background: #101620; overflow: hidden; margin: 0 0 8px; opacity: 0; transform: translateY(5px); }
+  .card-head { height: 28px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-bottom: .5px solid var(--border-soft); background: rgba(255,255,255,.015); font-family: var(--mono); font-size: 10px; color: #b9c5d7; }
+  .card-head .glyph { color: var(--blue); width: 12px; text-align: center; }
+  .card-head .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { margin-left: auto; flex: none; border-radius: 999px; padding: 2px 7px; font-size: 8.5px; letter-spacing: .05em; border: .5px solid #344156; color: var(--muted); }
+  .chip.red { color: #ffb3b3; border-color: rgba(255,107,107,.4); background: var(--red-soft); }
+  .chip.green { color: #a9f3d5; border-color: rgba(53,214,163,.4); background: var(--green-soft); }
+  .card-body { padding: 7px 10px 8px; font-family: var(--mono); font-size: 10px; line-height: 1.5; color: #aeb9c9; }
+  .card-line { display: block; opacity: 0; white-space: pre; }
+  .card-line.pass { color: #8ce9c4; }
+  .card-line.dim { color: #6f7b90; }
+  .arrow { color: var(--dim); }
+  .side { width: 330px; flex: none; border-left: .5px solid var(--border-soft); background: rgba(12,18,27,.55); display: flex; flex-direction: column; overflow: hidden; }
+  .side-tab { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: .5px solid var(--border-soft); color: #b9c5d7; font-size: 10.5px; }
+  .side-tab .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dim); }
+  .side-tab .dot.paused { background: var(--red); box-shadow: 0 0 0 3px rgba(255,107,107,.12); }
+  .side-body { position: relative; flex: 1; min-height: 0; padding: 11px 13px 10px; overflow: hidden; }
+  .side-view { position: absolute; left: 13px; right: 13px; top: 11px; bottom: 10px; display: none; flex-direction: column; gap: 8px; opacity: 0; }
+  .side-title { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 14px; line-height: 20px; font-weight: 650; }
+  .side-title .mark { color: var(--blue); font-size: 13px; }
+  .side-sub { margin-top: 1px; color: var(--muted); font-size: 10px; line-height: 15px; }
+  .timer { flex: none; margin-left: auto; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,.035); color: var(--muted); font-family: var(--mono); font-size: 8.5px; line-height: 13px; white-space: nowrap; }
+  .side-head { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+  .kicker { color: var(--muted); font-size: 8.5px; line-height: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .pill { display: inline-flex; align-self: flex-start; align-items: center; padding: 2px 7px; border-radius: 999px; background: rgba(77,141,255,.12); color: #a9c7ff; font-family: var(--mono); font-size: 9px; line-height: 14px; }
+  .file { color: #cdd7e6; font-family: var(--mono); font-size: 10px; line-height: 15px; word-break: break-all; }
+  .diff { padding: 6px 8px; border-radius: 7px; background: rgba(0,0,0,.22); font-family: var(--mono); font-size: 9.5px; line-height: 15px; }
+  .diff-line { display: flex; gap: 6px; white-space: pre-wrap; word-break: break-word; }
+  .diff-sign { flex: none; width: 8px; color: var(--dim); }
+  .diff-del .diff-sign { color: #ff8f8f; }
+  .diff-add .diff-sign { color: #7ee7c2; }
+  .diff-del { color: #f0b4b4; }
+  .diff-add { color: #b6f3dc; }
+  .note { color: var(--dim); font-size: 9px; line-height: 14px; }
+  .quote { padding: 8px 9px; border-radius: 7px; background: rgba(255,255,255,.035); color: #e4eaf4; font-size: 11px; line-height: 16px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 5px; }
+  .btn { appearance: none; border: .5px solid #35445b; border-radius: 999px; background: transparent; color: #becadd; padding: 4px 9px; font-size: 9.5px; line-height: 13px; font-family: inherit; }
+  .btn.solid { border-color: transparent; background: var(--blue); color: #fff; font-weight: 650; }
+  .btn.danger { border-color: rgba(255,107,107,.4); color: #ffb0b0; }
+  .tabs { display: flex; gap: 2px; margin-top: auto; padding-top: 5px; border-top: .5px solid var(--border-soft); }
+  .tab { flex: 1; padding: 4px 2px; color: var(--dim); font-size: 8px; line-height: 11px; letter-spacing: .05em; text-transform: uppercase; }
+  .tab b { display: block; color: #a4b1c4; font-size: 9px; line-height: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+  .tab.active { color: #9cc1ff; }
+  .tab.active b { color: #d9e7ff; }
+  .recent { display: flex; flex-direction: column; gap: 4px; }
+  .recent-item { display: flex; gap: 6px; color: var(--muted); font-family: var(--mono); font-size: 9px; line-height: 14px; }
+  .recent-item span:first-child { color: var(--dim); }
+  .side-btn-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .editor { display: none; flex-direction: column; gap: 6px; }
+  .editor-box { min-height: 52px; padding: 7px 8px; border: .5px solid #35445b; border-radius: 7px; background: rgba(0,0,0,.22); color: #e3eaf5; font-family: var(--mono); font-size: 9.5px; line-height: 15px; }
+  .caret { display: inline-block; width: 1px; height: 11px; background: var(--blue); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .composer-wrap { height: 90px; padding: 0 16px 12px; background: linear-gradient(180deg, rgba(12,17,26,0), rgba(12,17,26,.94) 26%); }
+  .dock { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 7px 0 10px; border: .5px solid #2b374a; border-radius: 10px; background: rgba(21,28,40,.97); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .dock-icon { color: #8d9aae; font-size: 12px; line-height: 1; }
+  .dock-dot { width: 6px; height: 6px; border-radius: 50%; background: #596579; flex: none; }
+  .dock-dot.armed { background: var(--blue); }
+  .dock-dot.paused { background: var(--red); animation: pulse 1.1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .dock-name { color: #aab7c9; font-size: 10px; white-space: nowrap; }
+  .dock-status { color: #dde5f1; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .dock-meta { color: #728097; font-family: var(--mono); font-size: 9px; max-width: 176px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dock-actions { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+  .dock-actions .btn { padding: 3px 7px; font-size: 9px; line-height: 12px; }
+  .dock-actions .btn.active { border-color: rgba(77,141,255,.55); color: #bfd6ff; background: var(--blue-soft); }
+  .composer { height: 38px; margin-top: 7px; display: flex; align-items: center; padding: 0 11px; border: .5px solid #2b374a; border-radius: 11px; background: rgba(16,22,32,.9); color: #5f6b80; font-size: 11px; }
+  .composer .send { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; background: #2a3547; color: #9eabbd; display: grid; place-items: center; font-size: 11px; }
+  .step-caption { position: absolute; left: 34px; bottom: 15px; color: #7f8da3; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
+.caption { position: absolute; right: 34px; bottom: 15px; color: #465366; font-size: 9px; letter-spacing: .11em; text-transform: uppercase; }
+  .cursor { position: absolute; width: 18px; height: 22px; opacity: 0; z-index: 80; pointer-events: none; filter: drop-shadow(0 3px 6px rgba(0,0,0,.55)); }
+  .cursor svg { display: block; width: 18px; height: 22px; }
+  .click-ring { position: absolute; width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.8); transform: translate(-50%,-50%) scale(.3); opacity: 0; z-index: 79; pointer-events: none; }
+  .endcard { position: absolute; left: 50%; top: 50%; width: 520px; transform: translate(-50%,-46%) scale(.98); opacity: 0; padding: 28px 30px 24px; border: .5px solid rgba(77,141,255,.32); border-radius: 20px; background: linear-gradient(180deg, rgba(19,28,43,.98), rgba(12,18,27,.99)); box-shadow: 0 30px 90px rgba(0,0,0,.62), 0 0 60px rgba(77,141,255,.08); text-align: center; z-index: 60; }
+  .end-badge { width: 44px; height: 44px; margin: 0 auto 12px; border-radius: 50%; display: grid; place-items: center; background: var(--blue-soft); border: 1px solid rgba(77,141,255,.45); color: #9ec3ff; font-size: 22px; }
+  .endcard h2 { margin: 0 0 7px; font-size: 25px; letter-spacing: -.02em; font-weight: 700; }
+  .endcard p { margin: 0 0 15px; color: #a6b4c7; font-size: 12px; line-height: 1.5; }
+  .endcard .repo { display: inline-block; color: #b6d3ff; font-family: var(--mono); font-size: 10px; border: .5px solid rgba(77,141,255,.25); background: rgba(77,141,255,.07); padding: 5px 10px; border-radius: 999px; }
+  .endcard .sim { margin-top: 12px; color: #5f6c80; font-size: 9px; letter-spacing: .09em; text-transform: uppercase; }
+  .stage-dim { position: absolute; inset: 0; background: rgba(4,7,12,.68); opacity: 0; z-index: 50; }
+  .fade { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 90; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="topbar">
+    <div class="brand"><span class="mark">◉</span><b>Agent Debugger</b><span class="sub">DeepSeek Harness plugin</span></div>
+    <div class="demo-pill">DEMO · 0.2</div>
+  </div>
+
+  <main class="window">
+    <div class="window-head">
+      <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+      <span class="window-title">DSH · coding session</span>
+      <span class="window-meta">desktop / main</span>
+    </div>
+
+    <div class="body">
+      <div class="chat-col">
+        <div class="chat-fade-top" id="chat-fade"></div>
+        <div class="chat" id="chat">
+          <div class="msg user" id="msg-user"><div><div class="who">You</div><div class="bubble">Rename the build output from <code>build</code> to <code>dist</code>, then run the tests.</div></div></div>
+          <div class="msg assistant" id="msg-plan"><div><div class="who">DSH</div><div class="bubble">I’ll update <code>vite.config.ts</code> and run the suite.</div></div></div>
+          <div class="card" id="edit-card">
+            <div class="card-head"><span class="glyph">✎</span><span class="name">edit · vite.config.ts</span><span class="chip red" id="edit-chip">paused</span></div>
+            <div class="card-body"><span class="card-line" id="edit-body">outDir: <span class="arrow">build → dist</span></span></div>
+          </div>
+          <div class="card" id="test-card">
+            <div class="card-head"><span class="glyph">$</span><span class="name">npm test</span><span class="chip" id="test-chip">running</span></div>
+            <div class="card-body">
+              <span class="card-line t1" data-at="0">PASS  src/config.test.ts</span>
+              <span class="card-line t1 dim" data-at=".45">Tests  12 passed (12)</span>
+              <span class="card-line t1 dim" data-at=".72">exit code: 0</span>
+            </div>
+          </div>
+          <div class="msg assistant" id="msg-done"><div><div class="who">DSH</div><div class="bubble">Renamed the output to <code>dist</code>; 12 tests pass.</div></div></div>
+
+          <div class="msg user" id="msg-user2"><div><div class="who">You</div><div class="bubble">Add a <code>/health</code> endpoint, and don’t finish until the tests pass.</div></div></div>
+          <div class="msg assistant" id="msg-plan2"><div><div class="who">DSH</div><div class="bubble">Adding the route and a test.</div></div></div>
+          <div class="card" id="edit2-card">
+            <div class="card-head"><span class="glyph">✎</span><span class="name">edit · src/server.ts</span><span class="chip green">applied</span></div>
+            <div class="card-body"><span class="card-line">+ app.get('/health', () =&gt; ok())</span></div>
+          </div>
+          <div class="msg assistant" id="msg-done2"><div><div class="who">DSH</div><div class="bubble">Added <code>/health</code> and a test. All checks pass.</div></div></div>
+          <div class="card" id="steer-card">
+            <div class="card-head"><span class="glyph">↳</span><span class="name">agent-debugger · instruction</span><span class="chip">next step</span></div>
+            <div class="card-body"><span class="card-line">Run the tests before finishing.</span></div>
+          </div>
+          <div class="card" id="test2-card">
+            <div class="card-head"><span class="glyph">$</span><span class="name">npm test</span><span class="chip green">exit 0</span></div>
+            <div class="card-body">
+              <span class="card-line t2" data-at="0">PASS  src/server.test.ts</span>
+              <span class="card-line t2 dim" data-at=".45">Tests  13 passed (13)</span>
+            </div>
+          </div>
+          <div class="msg assistant" id="msg-done3"><div><div class="who">DSH</div><div class="bubble">Tests pass. <code>/health</code> is ready.</div></div></div>
+        </div>
+
+        <div class="composer-wrap">
+          <div class="dock" id="dock">
+            <span class="dock-icon">◉</span>
+            <span class="dock-dot" id="dock-dot"></span>
+            <span class="dock-name">Agent Debugger</span>
+            <span class="dock-status" id="dock-status">Off</span>
+            <span class="dock-meta" id="dock-meta"></span>
+            <span class="dock-actions" id="dock-actions">
+              <button class="btn" id="btn-step">Step mode</button>
+              <button class="btn" id="btn-tool">Next match</button>
+              <button class="btn" id="btn-off">Off</button>
+              <button class="btn" id="btn-details">Details</button>
+            </span>
+            <span class="dock-actions" id="dock-pending" style="display:none">
+              <button class="btn" id="btn-open">Open panel</button>
+              <button class="btn solid" id="btn-run-dock">Run it</button>
+              <button class="btn danger" id="btn-stop-dock">Stop</button>
+            </span>
+            <span class="dock-actions" id="dock-finish" style="display:none">
+              <button class="btn" id="btn-open2">Open panel</button>
+              <button class="btn solid" id="btn-finish-dock">Finish</button>
+            </span>
+          </div>
+          <div class="composer"><span>Ask DSH anything…</span><span class="send">↑</span></div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="side-tab"><span>Debugger</span><span class="dot" id="side-dot"></span></div>
+        <div class="side-body">
+          <div class="side-view" id="side-idle">
+            <div class="side-head"><div><div class="side-title"><span class="mark">◉</span>Agent Debugger</div><div class="side-sub">Breakpoints are opt-in.</div></div></div>
+            <div class="side-btn-row">
+              <button class="btn" id="btn-step-panel">Step mode</button>
+              <button class="btn" id="btn-tool-panel">Next match</button>
+              <button class="btn" id="btn-finish-panel">Before finish</button>
+            </div>
+            <div class="note" id="idle-status">Not armed.</div>
+            <div class="kicker" style="margin-top:2px">Recent breakpoints</div>
+            <div class="recent" id="recent"><div class="recent-item"><span>—</span><span>No breakpoint yet</span></div></div>
+            <div class="note">In-memory · auto-release 120s.</div>
+            <div class="tabs"><div class="tab active">INPUT<b>Request</b></div><div class="tab">WHERE FROM<b>Origins</b></div><div class="tab">OUTPUT<b>Latest output</b></div></div>
+          </div>
+
+          <div class="side-view" id="side-tool">
+            <div class="side-head"><div><div class="side-title"><span class="mark">❚❚</span>Agent paused</div><div class="side-sub">About to edit a file. Choose what happens.</div></div><span class="timer">Auto-releases in 120s</span></div>
+            <div class="kicker">TOOL CALL</div><div class="pill">edit</div>
+            <div class="file">vite.config.ts</div>
+            <div class="diff">
+              <div class="diff-line diff-del"><span class="diff-sign">−</span><span>outDir: 'build',</span></div>
+              <div class="diff-line diff-add"><span class="diff-sign">+</span><span>outDir: 'dist',</span></div>
+            </div>
+            <div class="note">Read-only preview · from frozen arguments.</div>
+            <div class="actions">
+              <button class="btn solid" id="btn-run">Run it</button>
+              <button class="btn">Edit arguments</button>
+              <button class="btn">Skip</button>
+              <button class="btn danger">Stop turn</button>
+            </div>
+            <div class="tabs"><div class="tab active">INPUT<b>Request</b></div><div class="tab">WHERE FROM<b>Origins</b></div><div class="tab">OUTPUT<b>Latest output</b></div></div>
+          </div>
+
+          <div class="side-view" id="side-finish">
+            <div class="side-head"><div><div class="side-title"><span class="mark">❚❚</span>Agent paused</div><div class="side-sub">About to close the turn. Review the final answer.</div></div><span class="timer">Auto-finishes in 120s</span></div>
+            <div class="kicker">FINAL ANSWER</div>
+            <div class="quote">Added <code>/health</code> and a test. All checks pass.</div>
+            <div class="note">Finish closes the turn; guidance runs one more step.</div>
+            <div class="actions" id="finish-actions">
+              <button class="btn solid" id="btn-finish">Finish</button>
+              <button class="btn" id="btn-guidance">Add guidance</button>
+            </div>
+            <div class="editor" id="guide-editor">
+              <div class="kicker">NEXT STEP</div>
+              <div class="editor-box"><span id="guide-text"></span><span class="caret"></span></div>
+              <div class="actions"><button class="btn">Cancel</button><button class="btn solid" id="btn-add-continue">Add &amp; continue</button></div>
+            </div>
+            <div class="tabs"><div class="tab active">INPUT<b>Request</b></div><div class="tab">WHERE FROM<b>Origins</b></div><div class="tab">OUTPUT<b>Latest output</b></div></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="stage-dim" id="dim"></div>
+  <div class="endcard" id="endcard">
+    <div class="end-badge">◉</div>
+    <h2>See it before it happens.</h2>
+    <p>Pause before a tool runs. Pause before the turn closes.<br>Then decide.</p>
+    <div class="repo">github.com/Algovate/dsh-agent-debugger</div>
+    <div class="sim">Simulated demo · real plugin</div>
+  </div>
+  <div class="click-ring" id="ring"></div>
+  <div class="cursor" id="cursor">
+    <svg viewBox="0 0 18 22" xmlns="http://www.w3.org/2000/svg"><path d="M2 1.5v16.2l4.2-4.1 2.7 5.4 2.5-1.2-2.7-5.3H15L2 1.5Z" fill="#fff" stroke="#111" stroke-width="1"/></svg>
+  </div>
+  <div class="step-caption" id="step-caption">1 · Pause before the tool runs</div>
+  <div class="caption">Simulated demo</div>
+  <div class="fade" id="fade"></div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const ease = (v) => v < .5 ? 2*v*v : 1 - Math.pow(-2*v+2, 2)/2;
+  const fade = (t, a, b, c = Infinity, d = Infinity) => {
+    if (t < a) return 0;
+    if (t < b) return ease((t-a)/(b-a));
+    if (t <= c) return 1;
+    if (t < d) return 1 - ease((t-c)/(d-c));
+    return 0;
+  };
+  const setOpacity = (el, value, y = 0) => {
+    el.style.opacity = String(value);
+    el.style.transform = `translateY(${(1-value)*y}px)`;
+    el.style.display = value > 0 ? '' : 'none';
+  };
+  const setLines = (root, t, start, end) => {
+    root.querySelectorAll('.card-line').forEach((line) => {
+      const at = Number(line.dataset.at || 0);
+      const appear = clamp((t - start - at * (end - start)) / .22, 0, 1);
+      line.style.opacity = String(appear);
+      line.style.display = appear > 0 ? 'block' : 'none';
+    });
+  };
+  const pointOf = (id) => {
+    const el = $(id);
+    if (!el) return { x: 760, y: 470 };
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  };
+  const movePoint = (t, start, end, from, to, clickAt) => {
+    if (t < start - .12 || t > clickAt + .3) return null;
+    const p = ease(clamp((t - start) / (end - start), 0, 1));
+    const a = typeof from === 'string' ? pointOf(from) : from;
+    const b = pointOf(to);
+    return { x: a.x + (b.x-a.x)*p, y: a.y + (b.y-a.y)*p, target: b, click: clickAt };
+  };
+  const setCursor = (t) => {
+    const moves = [
+      movePoint(t, .7, 1.55, { x: 820, y: 510 }, 'btn-tool', 1.6),
+      movePoint(t, 4.75, 5.5, 'btn-tool', 'btn-run', 5.6),
+      movePoint(t, 10.55, 11.3, 'btn-details', 'btn-finish-panel', 11.4),
+      movePoint(t, 16.75, 17.15, 'btn-finish-panel', 'btn-guidance', 17.2),
+      movePoint(t, 18.55, 18.95, 'btn-guidance', 'btn-add-continue', 19.0),
+    ].filter(Boolean);
+    const cursor = $('cursor'), ring = $('ring');
+    if (moves.length === 0) { cursor.style.opacity = '0'; ring.style.opacity = '0'; return; }
+    const m = moves[0];
+    cursor.style.opacity = '1';
+    cursor.style.left = `${m.x}px`;
+    cursor.style.top = `${m.y - 22}px`;
+    const dt = t - m.click;
+    const active = dt >= -.02 && dt < .35;
+    ring.style.left = `${m.target.x}px`;
+    ring.style.top = `${m.target.y}px`;
+    ring.style.opacity = active ? String(1 - dt/.35) : '0';
+    ring.style.transform = `translate(-50%,-50%) scale(${active ? .35 + dt*2.1 : .3})`;
+  };
+  const setDock = (t) => {
+    const state =
+      t >= 3.2 && t < 5.8 ? 'tool-paused' :
+      t >= 14.6 && t < 19.05 ? 'finish-paused' :
+      t >= 11.4 && t < 14.6 ? 'finish-armed' :
+      t >= 1.6 && t < 3.2 ? 'tool-armed' :
+      'off';
+    const dot = $('dock-dot'), status = $('dock-status'), meta = $('dock-meta');
+    const regular = $('dock-actions'), pending = $('dock-pending'), finish = $('dock-finish');
+    const toolBtn = $('btn-tool'), stepBtn = $('btn-step'), offBtn = $('btn-off');
+    dot.className = 'dock-dot' + (state.includes('paused') ? ' paused' : state.includes('armed') ? ' armed' : '');
+    regular.style.display = state.includes('paused') ? 'none' : 'flex';
+    pending.style.display = state === 'tool-paused' ? 'flex' : 'none';
+    finish.style.display = state === 'finish-paused' ? 'flex' : 'none';
+    toolBtn.classList.toggle('active', state === 'tool-armed');
+    stepBtn.classList.remove('active');
+    offBtn.style.opacity = state === 'off' ? '.45' : '1';
+    if (state === 'off') { status.textContent = 'Off'; meta.textContent = t > 5.8 && t < 11.4 ? '1 breakpoint resolved' : ''; }
+    else if (state === 'tool-armed') { status.textContent = 'Armed'; meta.textContent = 'next match: edit, bash'; }
+    else if (state === 'tool-paused') { status.textContent = 'Paused'; meta.textContent = 'edit · auto 120s'; }
+    else if (state === 'finish-armed') { status.textContent = 'Armed'; meta.textContent = 'before the turn ends'; }
+    else { status.textContent = 'Paused'; meta.textContent = 'before finish · auto 120s'; }
+  };
+  const setViews = (t) => {
+    const tool = t >= 3.2 && t < 5.8;
+    const finish = t >= 14.6 && t < 19.05;
+    const idle = !tool && !finish;
+    $('side-idle').style.display = idle ? 'flex' : 'none';
+    $('side-tool').style.display = tool ? 'flex' : 'none';
+    $('side-finish').style.display = finish ? 'flex' : 'none';
+    $('side-idle').style.opacity = idle ? '1' : '0';
+    $('side-tool').style.opacity = tool ? '1' : '0';
+    $('side-finish').style.opacity = finish ? '1' : '0';
+    $('side-dot').className = 'dot' + (tool || finish ? ' paused' : '');
+    $('btn-tool-panel').classList.toggle('active', t >= 1.6 && t < 5.8);
+    $('btn-finish-panel').classList.toggle('active', t >= 11.4 && t < 19.2);
+    $('idle-status').textContent = t >= 11.4 && t < 19.2
+      ? 'Before finish is on: the agent will pause at the turn end.'
+      : t >= 5.8 && t < 11.4
+        ? 'Next match resolved. Arm again to pause another tool.'
+        : 'Not armed.';
+    $('recent').innerHTML = t >= 5.8
+      ? '<div class="recent-item"><span>edit</span><span>allow · 1 event</span></div>'
+      : '<div class="recent-item"><span>—</span><span>No breakpoint yet</span></div>';
+    $('finish-actions').style.display = t >= 17.2 ? 'none' : 'flex';
+    $('guide-editor').style.display = t >= 17.2 && t < 19.0 ? 'flex' : 'none';
+    const text = 'Run the tests before finishing.';
+    const n = clamp((t - 17.45) / .95, 0, 1);
+    $('guide-text').textContent = text.slice(0, Math.round(n * text.length));
+  };
+  window.renderDemo = (t) => {
+    setOpacity($('msg-user'), 1);
+    setOpacity($('msg-plan'), fade(t, 1.8, 2.15), 4);
+    setOpacity($('edit-card'), fade(t, 2.4, 2.75), 4);
+    setOpacity($('test-card'), fade(t, 5.8, 6.1), 4);
+    setOpacity($('msg-done'), fade(t, 7.0, 7.3), 4);
+    setOpacity($('msg-user2'), fade(t, 9.8, 10.1), 4);
+    setOpacity($('msg-plan2'), fade(t, 11.9, 12.2), 4);
+    setOpacity($('edit2-card'), fade(t, 12.5, 12.8), 4);
+    setOpacity($('msg-done2'), fade(t, 13.3, 13.6), 4);
+    setOpacity($('steer-card'), fade(t, 19.1, 19.35), 4);
+    setOpacity($('test2-card'), fade(t, 19.5, 19.75), 4);
+    setOpacity($('msg-done3'), fade(t, 20.3, 20.6), 4);
+    document.querySelectorAll('#edit-card .card-line, #edit2-card .card-line, #steer-card .card-line').forEach((line) => {
+      line.style.opacity = '1';
+      line.style.display = 'block';
+    });
+    setLines($('test-card'), t, 5.8, 7.0);
+    setLines($('test2-card'), t, 19.5, 20.4);
+    const editChip = $('edit-chip'), editBody = $('edit-body');
+    if (t < 5.7) { editChip.textContent = 'paused'; editChip.className = 'chip red'; editBody.innerHTML = 'outDir: <span class="arrow">build → dist</span>'; }
+    else { editChip.textContent = 'applied'; editChip.className = 'chip green'; editBody.innerHTML = 'outDir: <span style="color:#8ce9c4">dist</span>'; }
+    setDock(t);
+    setViews(t);
+    setCursor(t);
+    const chat = $('chat');
+    const max = Math.max(0, chat.scrollHeight - chat.clientHeight);
+    if (t < 9.7) chat.scrollTop = 0;
+    else if (t < 10.4) chat.scrollTop = max * ease((t - 9.7) / .7);
+    else chat.scrollTop = max;
+    $('chat-fade').style.opacity = chat.scrollTop > 4 ? '1' : '0';
+    $('step-caption').textContent = t < 9.6
+      ? '1 · Pause before the tool runs'
+      : t < 19.2
+        ? '2 · Pause before the turn closes'
+        : t < 21.2
+          ? '2 · Guidance runs one more step'
+          : '';
+    $('step-caption').style.opacity = t < 21.2 ? '1' : '0';
+    $('fade').style.opacity = String(Math.min(1, Math.max(0, 1 - fade(t, 0, .45) + fade(t, 23.4, 23.95))));
+    const endIn = fade(t, 21.3, 22.0);
+    $('dim').style.opacity = String(endIn * .68);
+    $('endcard').style.opacity = String(endIn);
+    $('endcard').style.transform = `translate(-50%,-50%) scale(${.98 + endIn*.02})`;
+  };
+  window.renderDemo(0);
+</script>
+</body>
+</html>

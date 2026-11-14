@@ -9,10 +9,12 @@ listing. The remaining external steps need npm credentials and a marketplace ent
 - npm name is available: `npm view dsh-agent-debugger version` → 404.
 - Public repository: <https://github.com/Algovate/dsh-agent-debugger> (main, CI green).
 - Release tag: `v0.2.0`.
+- Demo GIF: `docs/demo.gif` (960×540, 24 s, 12.5 fps, 300 frames, 2.3 MB), reproducible from
+  `docs/demo.html`; included in the README and npm package.
 - `repository`, `homepage`, and `bugs` are set in `package.json`.
 - Automated checks: plugin **64 pass**, workspace **150 pass**, `npm run check` passes.
-- `npm pack --dry-run` passes: 19 files, ~60 kB. The packed file list is the authority; no build
-  step and no install scripts means no pnpm build allowance is needed.
+- `npm pack --dry-run` passes: 21 files, 2.3 MB (includes `docs/demo.gif`). The packed file list is
+  the authority; no build step and no install scripts means no pnpm build allowance is needed.
 - npm authentication is **not configured** in the current environment; `npm publish` has not
   been run.
 - Live GUI still needs the finish-pause, `agent.steer` continuation, and diff-rendering walkthrough

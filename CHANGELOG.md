@@ -6,6 +6,7 @@
 
 - Turn-end breakpoint: pause with `agent/turn-stopping` before the turn closes, review the final assistant message, then finish or add one instruction and continue. `agent.steer` keeps the turn open; the default timeout safely finishes.
 - Edit/write preview: `edit` renders a bounded old/new line diff, `write` shows the path, line count, and a capped body, and `apply_patch` shows the patch text. Rendering only; no filesystem read or call rewrite.
+- 24-second demo GIF (`docs/demo.gif`) and its reproducible HTML source (`docs/demo.html`).
 
 ### Fixes and hardening
 

@@ -1,5 +1,9 @@
 # Agent Debugger — Details
 
+![Agent Debugger demo: tool pause, diff preview, finish pause](demo.gif)
+
+*Simulated UI demo. The plugin is installed and verified; the source of the animation is [demo.html](demo.html).*
+
 ## Seams
 
 | Seam | Event | Use |

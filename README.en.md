@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml/badge.svg)](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml)
 
+![Agent Debugger demo: tool pause, diff preview, finish pause](docs/demo.gif)
+
+<sub>Simulated UI demo; the plugin is installed and unit-tested. The GIF is generated from the deterministic timeline in <a href="docs/demo.html">docs/demo.html</a>.</sub>
+
 > **Stop the agent before it acts or delivers.** Set a breakpoint on the next model step, the next matching tool call, or the turn closing; inspect the assembled prompt, pending action, or final answer, then allow, skip, edit, steer, or finish.
 
 Trajectory viewers show what happened. Approvals decide whether something may run. Neither lets you pause a live agent, look at exactly what it is about to send, do, or deliver, and change course.
