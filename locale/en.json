@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Agent Debugger",
+    "description": "Breakpoints for DSH agents: pause before the next step, a matching tool call, or the turn closing; inspect the prompt, pending action, or final answer; edit, skip, steer, or finish.",
+    "detail": "docs/DETAIL.md"
+  }
+}

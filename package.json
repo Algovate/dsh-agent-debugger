@@ -1,0 +1,84 @@
+{
+  "name": "dsh-agent-debugger",
+  "version": "0.2.0",
+  "description": "A breakpoint debugger for DSH agents: pause before the next step, a matching tool call, or the turn closing; inspect the assembled prompt and the pending action; edit, skip, steer, or finish.",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "engine.js",
+    "preview.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
+    "SECURITY.md",
+    "docs"
+  ],
+  "engines": {
+    "node": ">=22.19",
+    "dsh": ">=0.2.2-0 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    },
+    "manifestVersion": 1
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.1.0",
+    "@deepseek-ai/dsh-commands": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-llm": "^0.2.2-rc.1",
+    "@deepseek-ai/dsh-tools": "^0.2.2-rc.1",
+    "@deepseek-ai/schemastery": "~3.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Algovate/dsh-agent-debugger.git"
+  },
+  "homepage": "https://github.com/Algovate/dsh-agent-debugger#readme",
+  "bugs": {
+    "url": "https://github.com/Algovate/dsh-agent-debugger/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "agent",
+    "debugger",
+    "breakpoint",
+    "prompt",
+    "inspect",
+    "tool-call",
+    "interrupt",
+    "turn-end",
+    "diff"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node --check index.js && node --check client.js && node --check engine.js && node --check preview.js",
+    "prepublishOnly": "node --test test/*.test.js && node --check index.js && node --check client.js && node --check engine.js && node --check preview.js"
+  },
+  "main": "index.js",
+  "author": "Algovate",
+  "publishConfig": {
+    "access": "public"
+  }
+}

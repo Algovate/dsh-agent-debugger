@@ -1,0 +1,8 @@
+# Agent Debugger bundle layer.
+#
+# `dsh plugin add dsh-agent-debugger` installs the package and appends it to the
+# profile's `dsh.profile.bundles`. This layer inserts the Host row; the
+# package's `dsh.client` declaration attaches the composer dock.
+- insert:
+    - id: agent-debugger
+      name: 'dsh-agent-debugger'
