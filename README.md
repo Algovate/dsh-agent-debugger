@@ -1,5 +1,7 @@
 # 智能体调试器 · Agent Debugger
 
+[![CI](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml/badge.svg)](https://github.com/Algovate/dsh-agent-debugger/actions/workflows/ci.yml)
+
 > **在 Agent 动手或交付之前，先看清它要做什么。** 给模型步、下一个工具调用或回合结束设断点：暂停、看提示词/参数/最终回答、改一句或改参数、再继续。
 
 现在的 Agent 工具有三种：能看到过程的（trajectory、replay）、能审批权限的（approval）、能事后回放的（session log）。没有一种能**在动作发生或交付前停下来，让你看清并改变它**。

@@ -7,10 +7,11 @@ listing. The remaining external steps need npm credentials and a marketplace ent
 
 - Version: `0.2.0`; package name `dsh-agent-debugger`.
 - npm name is available: `npm view dsh-agent-debugger version` → 404.
-- Public repository target: <https://github.com/Algovate/dsh-agent-debugger>.
+- Public repository: <https://github.com/Algovate/dsh-agent-debugger> (main, CI green).
+- `repository`, `homepage`, and `bugs` are set in `package.json`.
 - Automated checks: plugin **64 pass**, workspace **150 pass**, `npm run check` passes.
-- `npm pack --dry-run` passes. The packed file list is the authority; no build step and no
-  install scripts means no pnpm build allowance is needed.
+- `npm pack --dry-run` passes: 19 files, ~60 kB. The packed file list is the authority; no build
+  step and no install scripts means no pnpm build allowance is needed.
 - npm authentication is **not configured** in the current environment; `npm publish` has not
   been run.
 - Live GUI still needs the finish-pause, `agent.steer` continuation, and diff-rendering walkthrough
@@ -18,11 +19,11 @@ listing. The remaining external steps need npm credentials and a marketplace ent
 
 ## 1. Identity
 
-- [ ] Create the public repository under `Algovate`.
-- [ ] Add `repository`, `homepage`, and `bugs` to `package.json`; `author` is `Algovate`.
-- [ ] Push `main`; GitHub Actions CI is green.
-- [ ] Confirm the npm name is still available: `npm view dsh-agent-debugger version` → 404.
-- [ ] Tag the release: `v0.2.0`.
+- [x] Create the public repository under `Algovate`.
+- [x] Add `repository`, `homepage`, and `bugs` to `package.json`; `author` is `Algovate`.
+- [x] Push `main`; GitHub Actions CI is green.
+- [x] Confirm the npm name is still available: `npm view dsh-agent-debugger version` → 404.
+- [ ] Tag the release: `v0.2.0` (after the final docs commit and green CI).
 
 ## 2. Pre-flight
 
